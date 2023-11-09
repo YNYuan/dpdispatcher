@@ -150,14 +150,14 @@ class BohriumContext(BaseContext):
         for each in job_result:
             if "result_url" in each and each["result_url"] != "" and each["status"] == 2:
                 job_hash = ""
-                if each["id"] not in job_hashs:
+                if each["job_id"] not in job_hashs:
                     dlog.info(
-                        f"find unexpect job_hash, but task {each['id']} still been download."
+                        f"find unexpect job_hash, but task {each['job_id']} still been download."
                     )
                     dlog.debug(str(job_hashs))
-                    job_hash = str(each["id"])
+                    job_hash = str(each["job_id"])
                 else:
-                    job_hash = job_hashs[each["id"]]
+                    job_hash = job_hashs[each["job_id"]]
                 job_infos[job_hash] = each
         bar_format = "{l_bar}{bar}| {n:.02f}/{total:.02f} %  [{elapsed}<{remaining}, {rate_fmt}{postfix}]"
         for job_hash, info in tqdm.tqdm(

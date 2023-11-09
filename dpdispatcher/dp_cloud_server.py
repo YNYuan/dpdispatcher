@@ -34,36 +34,42 @@ class Bohrium(Machine):
         password = context.remote_profile.get("password", None)
         self.retry_count = context.remote_profile.get("retry_count", 3)
         self.ignore_exit_code = context.remote_profile.get("ignore_exit_code", True)
+        self.source_code = context.remote_profile.get("source_code", "Bohrium")
+        if self.input_data.get("source_code"):
+            self.source_code = self.input_data["source_code"]
 
-        ticket = os.environ.get("BOHR_TICKET", None)
-        if ticket:
-            self.api = Client(ticket=ticket)
-            self.group_id = None
-            return
+        if self.source_code in ["Bohrium"]:
+            ticket = os.environ.get("BOHR_TICKET", None)
+            if ticket:
+                self.api = Client(ticket=ticket)
+                self.group_id = None
+                return
 
-        if email is None and username is not None:
-            raise DeprecationWarning(
-                "username is no longer support in current version, "
-                "please consider use email instead of username."
-            )
-        if email is None and phone is None:
-            raise ValueError(
-                "can not find email/phone number in remote_profile, please check your machine file."
-            )
+            if email is None and username is not None:
+                raise DeprecationWarning(
+                    "username is no longer support in current version, "
+                    "please consider use email instead of username."
+                )
+            if email is None and phone is None:
+                raise ValueError(
+                    "can not find email/phone number in remote_profile, please check your machine file."
+                )
 
-        if password is None:
-            raise ValueError(
-                "can not find password in remote_profile, please check your machine file."
-            )
-        if self.api_version == 1:
-            raise DeprecationWarning(
-                "api version 1 is deprecated. Use version 2 instead."
-            )
+            if password is None:
+                raise ValueError(
+                    "can not find password in remote_profile, please check your machine file."
+                )
+            if self.api_version == 1:
+                raise DeprecationWarning(
+                    "api version 1 is deprecated. Use version 2 instead."
+                )
 
-        account = email
-        if email is None:
-            account = phone
-        self.api = Client(account, password)
+            account = email
+            if email is None:
+                account = phone
+            self.api = Client(account, password)
+        else:
+            self.api = Client(self.source_code)
 
         self.group_id = None
 

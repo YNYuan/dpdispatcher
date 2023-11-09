@@ -82,6 +82,11 @@ class Client:
         raise RequestInfoException(resp_code, short_url, err)
 
     def _get_oss_bucket(self, endpoint, bucket_name):
+        oss_ak = os.getenv("OSS_ACCESS_KEY", "")
+        oss_sk = os.getenv("OSS_SECRET_KEY", "")
+        oss_endpoint = os.getenv("OSS_ENDPOINT", "")
+        oss_bucket = os.getenv("OSS_BUCKET", "")
+        return oss2.Bucket(oss2.Auth(oss_ak, oss_sk), oss_endpoint,  oss_bucket)
         res = self.get("/data/get_sts_token", {})
         dlog.debug(f"debug: _get_oss_bucket: res:{res}")
         auth = oss2.StsAuth(
@@ -151,6 +156,8 @@ class Client:
     def job_create(
         self, job_type, oss_path, input_data, program_id=None, group_id=None
     ):
+        if input_data.get("source_code") != "Bohrium" and isinstance(oss_path, list):
+            oss_path = oss_path[0]
         post_data = {
             "job_type": job_type,
             "oss_path": oss_path,
@@ -167,11 +174,13 @@ class Client:
             post_data["cmd"] = input_data.get("command")
         if input_data.get("machine_type"):
             post_data["scass_type"] = input_data.get("machine_type")
+        if input_data.get("source_code"):
+            post_data["source_code"] = input_data.get("source_code")
         log = input_data.get(
             "logFiles", input_data.get("log_files", input_data.get("log_file"))
         )
         if log:
-            if isinstance(log, str):
+            if input_data.get("source_code") == "Bohrium" and isinstance(log, str):
                 post_data["log_file"] = [log]
         if (
             "checkpoint_files" in post_data
